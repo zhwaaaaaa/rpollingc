@@ -1,32 +1,32 @@
 package com.zhw.rpollingc.repository;
 
-import com.zhw.rpollingc.AttrTemplateConfiguration;
+import com.zhw.rpollingc.RpollingcTemplateConfiguration;
 import com.zhw.rpollingc.template.TemplateNamespace;
 import com.zhw.rpollingc.request.RequestBuilder;
 
 import java.lang.reflect.Proxy;
 import java.util.List;
 
-public class AttrRepositoryFactory {
+public class RpollingcRepositoryFactory {
 
-    private AttrTemplateConfiguration configuration;
+    private RpollingcTemplateConfiguration configuration;
     private ClassLoader classLoader;
     private RequestBuilder RequestBuilder;
 
-    public AttrRepositoryFactory() {
+    public RpollingcRepositoryFactory() {
     }
 
-    public AttrRepositoryFactory(AttrTemplateConfiguration configuration,
+    public RpollingcRepositoryFactory(RpollingcTemplateConfiguration configuration,
                                        RequestBuilder RequestBuilder) {
         this(configuration, null, RequestBuilder);
     }
 
-    public AttrRepositoryFactory(AttrTemplateConfiguration configuration, ClassLoader classLoader) {
+    public RpollingcRepositoryFactory(RpollingcTemplateConfiguration configuration, ClassLoader classLoader) {
         this.configuration = configuration;
         this.classLoader = classLoader;
     }
 
-    public AttrRepositoryFactory(AttrTemplateConfiguration configuration,
+    public RpollingcRepositoryFactory(RpollingcTemplateConfiguration configuration,
                                        ClassLoader classLoader,
                                        RequestBuilder RequestBuilder) {
         this.configuration = configuration;
@@ -34,7 +34,7 @@ public class AttrRepositoryFactory {
         this.RequestBuilder = RequestBuilder;
     }
 
-    public AttrTemplateConfiguration getConfiguration() {
+    public RpollingcTemplateConfiguration getConfiguration() {
         return configuration;
     }
 
@@ -50,7 +50,7 @@ public class AttrRepositoryFactory {
         this.RequestBuilder = RequestBuilder;
     }
 
-    public void setConfiguration(AttrTemplateConfiguration configuration) {
+    public void setConfiguration(RpollingcTemplateConfiguration configuration) {
         this.configuration = configuration;
     }
 
@@ -61,7 +61,7 @@ public class AttrRepositoryFactory {
     @SuppressWarnings("unchecked")
     public <T> T createRepository(Class<T> repositoryClass) {
         TemplateNamespace namespace = configuration.getTemplateNamespace(repositoryClass);
-        List<AttrInterceptor> interceptors = configuration.getInterceptors();
+        List<RpollingcInterceptor> interceptors = configuration.getInterceptors();
         ClassLoader cl = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
         ProxyRepositoryHandler handler = new ProxyRepositoryHandler(repositoryClass,
                 namespace,

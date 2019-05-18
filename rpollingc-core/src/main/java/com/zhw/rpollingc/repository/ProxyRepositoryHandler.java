@@ -16,12 +16,12 @@ public class ProxyRepositoryHandler implements InvocationHandler {
 
     private Class<?> repositoryClass;
     private TemplateNamespace namespace;
-    private List<AttrInterceptor> interceptors;
+    private List<RpollingcInterceptor> interceptors;
     private RequestBuilder RequestBuilder;
 
     public ProxyRepositoryHandler(Class<?> repositoryClass,
                                         TemplateNamespace namespace,
-                                        List<AttrInterceptor> interceptors,
+                                        List<RpollingcInterceptor> interceptors,
                                         RequestBuilder RequestBuilder) {
         this.repositoryClass = repositoryClass;
         this.namespace = namespace;
@@ -63,7 +63,7 @@ public class ProxyRepositoryHandler implements InvocationHandler {
 
         TemplateMeta meta = namespace.getMeta(method);
         if (meta != null) {
-            AttrExecution execution = new ChainAttrExecution(interceptors, meta);
+            RpollingcExecution execution = new ChainRpollingcExecution(interceptors, meta);
             String templateUrl = meta.getTemplateUrl();
             RequestResolver requestResolver = meta.getRequestResolver();
             Object body = requestResolver.resolveBody(args);
@@ -74,12 +74,12 @@ public class ProxyRepositoryHandler implements InvocationHandler {
         return method.invoke(this, args);
     }
 
-    private class ChainAttrExecution implements AttrExecution {
+    private class ChainRpollingcExecution implements RpollingcExecution {
 
-        private Iterator<AttrInterceptor> interceptorIterator;
+        private Iterator<RpollingcInterceptor> interceptorIterator;
         private TemplateMeta templateMeta;
 
-        public ChainAttrExecution(List<AttrInterceptor> interceptors,
+        public ChainRpollingcExecution(List<RpollingcInterceptor> interceptors,
                                         TemplateMeta templateMeta) {
             this.interceptorIterator = interceptors.iterator();
             this.templateMeta = templateMeta;

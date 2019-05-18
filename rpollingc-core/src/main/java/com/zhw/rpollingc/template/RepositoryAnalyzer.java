@@ -41,11 +41,11 @@ public class RepositoryAnalyzer {
             throw new IllegalStateException(repositoryClass.getName() + "require methods");
         }
 
-        AttrTemplate repository = AnnotationUtils.findAnnotation(repositoryClass, AttrTemplate.class);
+        RpollingcTemplate repository = AnnotationUtils.findAnnotation(repositoryClass, RpollingcTemplate.class);
 
         Map<Method, TemplateMeta> methodTemplateMetaMap = new HashMap<>();
         for (Method method : methods) {
-            AttrTemplate template = AnnotationUtils.findAnnotation(method, AttrTemplate.class);
+            RpollingcTemplate template = AnnotationUtils.findAnnotation(method, RpollingcTemplate.class);
             String url = analyzeUrl(repositoryClass, repository, method, template);
             RequestResolver requestResolver = analyzeBodyResolver(repositoryClass, repository, method, template);
             TypeReference<?> resultClass = analyzeResultType(repositoryClass, repository, method, template);
@@ -57,12 +57,12 @@ public class RepositoryAnalyzer {
         return methodTemplateMetaMap;
     }
 
-    private boolean analyzeAsync(Class<?> repositoryClass, AttrTemplate repository, Method method, AttrTemplate template) {
+    private boolean analyzeAsync(Class<?> repositoryClass, RpollingcTemplate repository, Method method, RpollingcTemplate template) {
         Class<?> returnType = method.getReturnType();
         return returnType.equals(Observable.class);
     }
 
-    private int analyzeTimeoutSecond(Class<?> repositoryClass, AttrTemplate repository, Method method, AttrTemplate template) {
+    private int analyzeTimeoutSecond(Class<?> repositoryClass, RpollingcTemplate repository, Method method, RpollingcTemplate template) {
         if (template != null) {
             return template.timeoutSecond();
         }
@@ -72,7 +72,7 @@ public class RepositoryAnalyzer {
         return 1800;
     }
 
-    private TypeReference<?> analyzeResultType(Class<?> repositoryClass, AttrTemplate repository, Method method, AttrTemplate template) {
+    private TypeReference<?> analyzeResultType(Class<?> repositoryClass, RpollingcTemplate repository, Method method, RpollingcTemplate template) {
         final Type returnType = method.getGenericReturnType();
         if (analyzeAsync(repositoryClass, repository, method, template)) {
             return new TypeReference<Object>() {
@@ -94,8 +94,8 @@ public class RepositoryAnalyzer {
 
     }
 
-    private RequestResolver analyzeBodyResolver(Class<?> repositoryClass, AttrTemplate repository, Method method,
-                                                AttrTemplate template) {
+    private RequestResolver analyzeBodyResolver(Class<?> repositoryClass, RpollingcTemplate repository, Method method,
+                                                RpollingcTemplate template) {
         Class<? extends RequestResolver> defaultRequestResolverClass = this.defaultRequestResolverClass;
         if (template != null) {
             defaultRequestResolverClass = template.requestResolverClass();
@@ -112,7 +112,7 @@ public class RepositoryAnalyzer {
         }
     }
 
-    private String analyzeUrl(Class<?> repositoryClass, AttrTemplate repository, Method method, AttrTemplate template) {
+    private String analyzeUrl(Class<?> repositoryClass, RpollingcTemplate repository, Method method, RpollingcTemplate template) {
 
         String url = StringUtil.EMPTY_STRING;
         if (repository != null) {

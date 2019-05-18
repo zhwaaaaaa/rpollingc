@@ -1,25 +1,26 @@
 package com.zhw.rpollingc;
 
-import com.zhw.rpollingc.repository.AttrExecution;
-import com.zhw.rpollingc.repository.AttrInterceptor;
+import com.zhw.rpollingc.repository.RpollingcExecution;
+import com.zhw.rpollingc.repository.RpollingcInterceptor;
 import com.zhw.rpollingc.template.RepositoryAnalyzer;
 import com.zhw.rpollingc.template.TemplateMeta;
 import com.zhw.rpollingc.template.TemplateNamespace;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.reactivex.internal.functions.Functions;
+import io.reactivex.Observable;
 
 import java.lang.reflect.Method;
 import java.util.*;
 
-public class AttrTemplateConfiguration {
+public class RpollingcTemplateConfiguration {
 
-    private static final InternalLogger log = InternalLoggerFactory.getInstance(AttrTemplateConfiguration.class);
+    private static final InternalLogger log = InternalLoggerFactory.getInstance(RpollingcTemplateConfiguration.class);
 
-    private static final class DebugInterceptor implements AttrInterceptor {
+    private static final class DebugInterceptor implements RpollingcInterceptor {
 
         @Override
-        public Object intercept(AttrExecution execution, String url, Object body) throws Throwable {
+        public Object intercept(RpollingcExecution execution, String url, Object body) throws Throwable {
             try {
                 Object invoke = execution.invoke(url, body);
                 if (execution.isAsync()) {
@@ -33,39 +34,39 @@ public class AttrTemplateConfiguration {
         }
 
         private void logErr(String url, Object e) {
-            log.error("error attr url={}", url, e);
+            log.error("error Rpollingc url={}", url, e);
         }
     }
 
-    private List<AttrInterceptor> interceptors;
+    private List<RpollingcInterceptor> interceptors;
 
     private Map<Class<?>, TemplateNamespace> namespaceMap;
 
     private RepositoryAnalyzer repositoryAnalyzer = new RepositoryAnalyzer();
 
-    public AttrTemplateConfiguration() {
+    public RpollingcTemplateConfiguration() {
         namespaceMap = new HashMap<>();
         interceptors = new ArrayList<>();
-        String property = System.getProperty("datayes.attr.debug");
+        String property = System.getProperty("rpollingc.debug");
         if ("true".equals(property)) {
             interceptors.add(new DebugInterceptor());
         }
     }
 
-    public AttrTemplateConfiguration(RepositoryAnalyzer repositoryAnalyzer) {
+    public RpollingcTemplateConfiguration(RepositoryAnalyzer repositoryAnalyzer) {
         this.repositoryAnalyzer = repositoryAnalyzer;
     }
 
-    public AttrTemplateConfiguration(List<AttrInterceptor> interceptors, Map<Class<?>, TemplateNamespace> namespaceMap) {
+    public RpollingcTemplateConfiguration(List<RpollingcInterceptor> interceptors, Map<Class<?>, TemplateNamespace> namespaceMap) {
         this.interceptors = new ArrayList<>(interceptors);
         this.namespaceMap = new HashMap<>(namespaceMap);
     }
 
-    public void addInterceptor(AttrInterceptor interceptor) {
+    public void addInterceptor(RpollingcInterceptor interceptor) {
         interceptors.add(interceptor);
     }
 
-    public List<AttrInterceptor> getInterceptors() {
+    public List<RpollingcInterceptor> getInterceptors() {
         return new ArrayList<>(interceptors);
     }
 

@@ -1,7 +1,7 @@
 package com.zhw.rpollingc.repository;
 
-public interface AttrInterceptor {
+public interface RpollingcInterceptor {
 
-    Object intercept(AttrExecution execution, String url, Object body) throws Throwable;
+    Object intercept(RpollingcExecution execution, String url, Object body) throws Throwable;
 
 }

@@ -1,6 +1,6 @@
 package com.zhw.rpollingc.repository;
 
-public interface AttrExecution {
+public interface RpollingcExecution {
 
     boolean isAsync();
 

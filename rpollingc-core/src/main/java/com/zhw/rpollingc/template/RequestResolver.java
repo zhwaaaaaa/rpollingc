@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 
 public interface RequestResolver {
 
-    void init(Class<?> repositoryClass, AttrTemplate repository, Method method, AttrTemplate template);
+    void init(Class<?> repositoryClass, RpollingcTemplate repository, Method method, RpollingcTemplate template);
 
     Object resolveBody(Object[] args);
 

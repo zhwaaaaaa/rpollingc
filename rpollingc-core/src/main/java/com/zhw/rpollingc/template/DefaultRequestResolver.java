@@ -17,8 +17,8 @@ public class DefaultRequestResolver implements RequestResolver {
 
     @Override
     public void init(Class<?> repositoryClass,
-                     AttrTemplate repository,
-                     Method method, AttrTemplate template) {
+                     RpollingcTemplate repository,
+                     Method method, RpollingcTemplate template) {
         int parameterNum = method.getParameterCount();
         if (parameterNum == 0) {
             this.parameterNum = 0;
