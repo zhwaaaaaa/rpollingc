@@ -2,7 +2,7 @@ package com.zhw.rpollingc.request.remote;
 
 import com.zhw.rpollingc.request.netty.RequestEvent;
 
-public class ServerException extends Exception {
+public class ServerException extends RpollingcException {
     public ServerException() {
     }
 

@@ -2,7 +2,7 @@ package com.zhw.rpollingc.request.remote;
 
 import com.zhw.rpollingc.request.netty.RequestEvent;
 
-public class Exception extends RuntimeException {
+public class RpollingcException extends RuntimeException {
 
     private RequestEvent requestEvent;
 
@@ -14,26 +14,26 @@ public class Exception extends RuntimeException {
         return requestEvent;
     }
 
-    public Exception() {
+    public RpollingcException() {
     }
 
-    public Exception(String message) {
+    public RpollingcException(String message) {
         super(message);
     }
 
-    public Exception(String message, Throwable cause) {
+    public RpollingcException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public Exception(Throwable cause) {
+    public RpollingcException(Throwable cause) {
         super(cause);
     }
 
-    public Exception(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public RpollingcException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 
-    public Exception(String message, RequestEvent requestEvent) {
+    public RpollingcException(String message, RequestEvent requestEvent) {
         super(message);
         this.requestEvent = requestEvent;
     }
