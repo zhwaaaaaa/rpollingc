@@ -10,5 +10,7 @@
 ## 特性
  - 基于netty长连接，轮询和定时采用selector
  - 使用jdk Proxy 调用，结合rxjava方便的实现异步。并且也支持同步调用
+ - 采用jackson 序列化和反序列化
  
+## 
  
