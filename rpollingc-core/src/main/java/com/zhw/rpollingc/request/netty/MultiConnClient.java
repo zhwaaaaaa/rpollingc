@@ -1,6 +1,5 @@
 package com.zhw.rpollingc.request.netty;
 
-import com.zhw.rpollingc.request.remote.Exception;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.util.HashedWheelTimer;

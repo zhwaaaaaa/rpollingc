@@ -10,6 +10,8 @@ public class NettyConfig {
     private String hostHeader;
     private int idleHeartbeatInterval = 30;
     private long dnsExpireTime = -1;
+    private int maxRespBodyLen = 10 << 20; // 10M
+    private long maxWaitingOpenTimeMs = 5000;//5s
 
     public NettyConfig() {
     }
@@ -43,6 +45,22 @@ public class NettyConfig {
         this.remotePort = remotePort;
     }
 
+    public void setMaxRespBodyLen(int maxRespBodyLen) {
+        this.maxRespBodyLen = maxRespBodyLen;
+    }
+
+    public void setMaxWaitingOpenTimeMs(long maxWaitingOpenTimeMs) {
+        this.maxWaitingOpenTimeMs = maxWaitingOpenTimeMs;
+    }
+
+    public long getMaxWaitingOpenTimeMs() {
+        return maxWaitingOpenTimeMs;
+    }
+
+    public int getMaxRespBodyLen() {
+        return maxRespBodyLen;
+    }
+
     public long getDnsExpireTime() {
         return dnsExpireTime;
     }
@@ -68,12 +86,12 @@ public class NettyConfig {
 
     @Override
     public String toString() {
-        return "{" +
-                "remoteHost='" + remoteHost + '\'' +
+        return "{" + "remoteHost='" + remoteHost + '\'' +
                 ", remotePort=" + remotePort +
                 ", hostHeader='" + hostHeader + '\'' +
                 ", idleHeartbeatInterval=" + idleHeartbeatInterval +
                 ", dnsExpireTime=" + dnsExpireTime +
+                ", maxRespBodyLen=" + maxRespBodyLen +
                 '}';
     }
 }

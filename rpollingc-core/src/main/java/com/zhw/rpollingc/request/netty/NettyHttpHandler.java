@@ -1,8 +1,9 @@
 package com.zhw.rpollingc.request.netty;
 
+import com.zhw.rpollingc.http.conn.HttpRequest;
 import com.zhw.rpollingc.request.remote.ErrorResponseException;
-import com.zhw.rpollingc.request.remote.Exception;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -14,9 +15,15 @@ import io.netty.util.internal.logging.Slf4JLoggerFactory;
 
 import java.nio.charset.Charset;
 import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.Queue;
 
 public class NettyHttpHandler extends ChannelDuplexHandler {
+    public interface Listener {
+        void onOpened(Channel ch);
+
+        void onClosed(Collection<HttpRequest> failedEvts);
+    }
 
     // -------debug-----------------
     private static long lastRequestId = 0L;
@@ -29,9 +36,9 @@ public class NettyHttpHandler extends ChannelDuplexHandler {
 
     private final Queue<RequestEvent> evts = new ArrayDeque<>();
     private final String hostHeader;
-    private final NettyConnection.Listener listener;
+    private final Listener listener;
 
-    public NettyHttpHandler(String hostHeader, NettyConnection.Listener listener) {
+    public NettyHttpHandler(String hostHeader, Listener listener) {
         this.hostHeader = hostHeader;
         this.listener = listener;
     }
@@ -70,11 +77,6 @@ public class NettyHttpHandler extends ChannelDuplexHandler {
             try {
                 RequestEvent event = evts.poll();
                 if (event != null) {
-                    /*String Id = response.headers().get(_ID_HEADER);
-                    String uuid = String.valueOf(event.getUuid());
-                    if (!Id.equals(uuid)) {
-                        System.err.println(Id + "<-->" + uuid);
-                    }*/
                     long receivedTime = System.currentTimeMillis();
                     log.debug("request cost {} ms ", receivedTime - event.getSentTime());
 
@@ -112,8 +114,8 @@ public class NettyHttpHandler extends ChannelDuplexHandler {
             } else {
                 request = createPostRequest((PostEvent) msg, ctx.alloc());
             }
-            ctx.write(request, promise);
             long writeTime = System.currentTimeMillis();
+            ctx.write(request, promise);
             promise.addListener(future -> {
                 if (future.isSuccess()) {
                     evts.add(event);
@@ -135,7 +137,7 @@ public class NettyHttpHandler extends ChannelDuplexHandler {
         request.headers()
                 .add("Host", hostHeader)
                 .add("Connection", "keep-alive")
-                .add("User-Agent", "mom--client(netty4)")
+                .add("User-Agent", "rpolling-client(netty4)")
                 .add("Content-Type", "application/json")
                 .add(_ID_HEADER, postEvent.getUuid())
                 .add("Content-Length", length);
@@ -149,7 +151,7 @@ public class NettyHttpHandler extends ChannelDuplexHandler {
         request.headers()
                 .add("Host", hostHeader)
                 .add("Connection", "keep-alive")
-                .add("User-Agent", "mom--client(netty4)")
+                .add("User-Agent", "rpolling-client(netty4)")
                 .add(_ID_HEADER, getEvent.getUuid());
         return request;
     }

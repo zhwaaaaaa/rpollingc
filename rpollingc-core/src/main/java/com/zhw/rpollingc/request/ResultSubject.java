@@ -11,7 +11,7 @@ public class ResultSubject<T> extends Observable<T> {
 
     private final BehaviorSubject<T> source = BehaviorSubject.create();
 
-    private volatile AtomicBoolean completed = new AtomicBoolean(false);
+    private AtomicBoolean completed = new AtomicBoolean(false);
     private T result;
     private Throwable error;
 

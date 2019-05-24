@@ -3,7 +3,6 @@ package com.zhw.rpollingc.request.netty;
 import com.zhw.rpollingc.request.protocol.QueryResultExecutor;
 import com.zhw.rpollingc.request.remote.ClientException;
 import com.zhw.rpollingc.request.remote.ErrorResponseException;
-import com.zhw.rpollingc.request.remote.Exception;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
