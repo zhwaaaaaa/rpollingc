@@ -93,7 +93,7 @@ public class HttpPollingClient implements PollingClient {
         @Override
         protected void dispatchProtocol(FullHttpResponse resp,
                                         PollingOptions options) throws ProtocolException {
-            protocol.pollingReponse(this, resp, options);
+            protocol.pollingResponse(this, resp, options);
         }
     }
 

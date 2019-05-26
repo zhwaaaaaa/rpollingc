@@ -15,7 +15,7 @@ public interface HttpPollingProtocol {
                       FullHttpResponse response,
                       PollingOptions options) throws ProtocolException;
 
-    void pollingReponse(PollingHandler handler,
-                        FullHttpResponse response,
-                        PollingOptions options) throws ProtocolException;
+    void pollingResponse(PollingHandler handler,
+                         FullHttpResponse response,
+                         PollingOptions options) throws ProtocolException;
 }
