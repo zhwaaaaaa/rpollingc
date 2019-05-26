@@ -1,49 +1,25 @@
 package com.zhw.rpollingc.http.conn;
 
 import io.netty.handler.codec.DecoderResult;
-
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
 
 public abstract class HttpRequest {
-    private String uri;
-    private BiConsumer<DecoderResult, HttpEndPoint> onResponse;
-    private Consumer<Throwable> onError;
+    private FullHttpRequest fullHttpRequest;
 
-    public HttpRequest(String uri,
-                       BiConsumer<DecoderResult, HttpEndPoint> onResponse,
-                       Consumer<Throwable> onError) {
-        this.uri = uri;
-        this.onResponse = onResponse;
-        this.onError = onError;
+    public HttpRequest() {
     }
 
-    public String getUri() {
-        return uri;
+    public void setFullHttpRequest(FullHttpRequest fullHttpRequest) {
+        this.fullHttpRequest = fullHttpRequest;
     }
 
-    public BiConsumer<DecoderResult, HttpEndPoint> getOnResponse() {
-        return onResponse;
+    public FullHttpRequest getFullHttpRequest() {
+        return fullHttpRequest;
     }
 
-    public Consumer<Throwable> getOnError() {
-        return onError;
-    }
-}
+    public abstract void onResp(FullHttpResponse resp, HttpEndPoint endPoint);
 
-class GetRequest extends HttpRequest {
-    public GetRequest(String uri,
-                      BiConsumer<DecoderResult, HttpEndPoint> onResponse,
-                      Consumer<Throwable> onError) {
-        super(uri, onResponse, onError);
-    }
-}
+    public abstract void onError(Throwable err, HttpEndPoint endPoint);
 
-class PostRequest extends HttpRequest {
-
-    public PostRequest(String uri,
-                       BiConsumer<DecoderResult, HttpEndPoint> onResponse,
-                       Consumer<Throwable> onError) {
-        super(uri, onResponse, onError);
-    }
 }

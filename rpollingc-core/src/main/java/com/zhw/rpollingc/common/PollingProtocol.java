@@ -1,7 +1,14 @@
 package com.zhw.rpollingc.common;
 
-public interface PollingProtocol<R> {
+import java.util.function.Consumer;
 
-    R createRequest(String service, Object msg, TypeRefrence<?> retType);
+public interface PollingProtocol<R, T> {
+
+    R createRequest(String service,
+                    Object msg,
+                    TypeReference<T> retType,
+                    Consumer<T> onResult,
+                    Consumer<Throwable> onError,
+                    PollingOptions options) throws ProtocolException;
 
 }

@@ -84,14 +84,14 @@ public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
             long now = System.currentTimeMillis();
 
             if (userClose) {
-                request.getOnError().accept(new RpcException("user close connection"));
+                request.onError(new RpcException("user close connection"), this);
             } else if (times < 6) {
                 // 连接暂时关闭了，发送给下一个节点
                 next.send(request, times + 1);
             } else if (lastCloseTime > 0L) {
                 if (now - lastCloseTime > maxWaitingOpenTime) {
                     // 连接 连接已经关闭很长时间了。
-                    request.getOnError().accept(new RpcException("closed connection"));
+                    request.onError(new RpcException("closed connection"), this);
                 } else {
                     // 保存到队列等待连接上了之后发送数据
                     int offer = waitingQueue.offer(request);
@@ -101,7 +101,7 @@ public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
                     }
                     if (offer < 0) {
                         // 队列不是null，说明队列都满了，就不等了，直接报错
-                        request.getOnError().accept(new RpcException("to many request waiting closed connection"));
+                        request.onError(new RpcException("to many request waiting closed connection"), this);
                     } else {
                         // 正在collecting，此时重发就能发出去
                         send(request, times);
@@ -113,7 +113,7 @@ public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
                 send(request, times);
             } else {
                 // lastCloseTime==-1 连接还没打开
-                request.getOnError().accept(new IllegalStateException("sending after calling connect()"));
+                request.onError(new IllegalStateException("sending after calling connect()"), this);
             }
         } else {
             ChannelFuture future = channel.writeAndFlush(request);
@@ -125,9 +125,9 @@ public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
                         // 能够有机会进入netty排队，差点就发出去了，这里把times变成0，让它尽可能快的发出去
                         next.send(request, 0);
                     } else if (cause != null) {
-                        request.getOnError().accept(new RpcException("connection error", cause));
+                        request.onError(new RpcException("connection error", cause), HttpConnection.this);
                     } else {
-                        request.getOnError().accept(new RpcException("send occur unkown error"));
+                        request.onError(new RpcException("send occur unkown error"), HttpConnection.this);
                     }
                 }
             });
@@ -161,7 +161,7 @@ public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
                             RpcException exp = new RpcException("closed connection and reconnect failed:" + errMsg);
                             for (; iterator.hasNext(); ) {
                                 HttpRequest req = iterator.next();
-                                req.getOnError().accept(exp);
+                                req.onError(exp, this);
                             }
                         }
                     } else if (userClose) {
@@ -171,7 +171,7 @@ public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
                             RpcException exp = new RpcException("waiting util user closed connection");
                             for (; iterator.hasNext(); ) {
                                 HttpRequest req = iterator.next();
-                                req.getOnError().accept(exp);
+                                req.onError(exp, this);
                             }
                         }
                         return;
@@ -210,7 +210,7 @@ public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
                 RpcException exp = new RpcException("user closed connection");
                 for (; iterator.hasNext(); ) {
                     HttpRequest req = iterator.next();
-                    req.getOnError().accept(exp);
+                    req.onError(exp, this);
                 }
             }
             return;
@@ -239,7 +239,7 @@ public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
             if (iterator.hasNext()) {
                 RpcException exp = new RpcException("to many req waiting unopened connection");
                 do {
-                    iterator.next().getOnError().accept(exp);
+                    iterator.next().onError(exp, this);
                 } while (iterator.hasNext());
             }
             channel = null;

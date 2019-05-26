@@ -1,4 +1,4 @@
 package com.zhw.rpollingc.common;
 
-public interface TypeRefrence<T> {
+public interface TypeReference<T> {
 }

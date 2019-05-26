@@ -42,7 +42,6 @@ public class NettyHttpHandler extends ChannelDuplexHandler {
         this.hostHeader = hostHeader;
         this.listener = listener;
     }
-
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         listener.onClosed(evts);
