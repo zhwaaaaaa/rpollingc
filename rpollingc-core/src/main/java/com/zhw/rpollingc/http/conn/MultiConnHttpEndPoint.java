@@ -1,26 +1,26 @@
 package com.zhw.rpollingc.http.conn;
 
 import com.zhw.rpollingc.common.RpcException;
-import com.zhw.rpollingc.request.netty.NettyConfig;
+import com.zhw.rpollingc.http.NettyConfig;
 import io.netty.util.internal.SystemPropertyUtil;
 import io.netty.util.internal.ThreadLocalRandom;
 
-public class MultiConnClient implements HttpEndPoint {
+public class MultiConnHttpEndPoint implements HttpEndPoint {
 
     private static final int DEFAULT_CONN = SystemPropertyUtil.getInt("rpollingc.connection.num", 8);
 
     private final HttpEndPoint[] endPoints;
     private final int connNum;
 
-    public MultiConnClient(NettyConfig config) {
+    public MultiConnHttpEndPoint(NettyConfig config) {
         this(DEFAULT_CONN, config);
     }
 
-    public MultiConnClient(int connNum, NettyConfig config) {
+    public MultiConnHttpEndPoint(int connNum, NettyConfig config) {
         this(connNum, new HttpConnectionFactory(config));
     }
 
-    public MultiConnClient(int connNum, HttpConnectionFactory factory) {
+    public MultiConnHttpEndPoint(int connNum, HttpConnectionFactory factory) {
         if (connNum < 2) {
             throw new IllegalArgumentException("connNum < 2");
         }

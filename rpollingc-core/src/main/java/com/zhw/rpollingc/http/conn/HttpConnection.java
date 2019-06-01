@@ -1,17 +1,15 @@
 package com.zhw.rpollingc.http.conn;
 
 import com.zhw.rpollingc.common.RpcException;
-import com.zhw.rpollingc.request.netty.NettyConfig;
-import com.zhw.rpollingc.request.netty.NettyConnection;
-import com.zhw.rpollingc.request.netty.NettyHttpHandler;
+import com.zhw.rpollingc.http.NettyConfig;
 import com.zhw.rpollingc.utils.AtomicArrayCollector;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpResponseDecoder;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.internal.logging.InternalLogger;
@@ -40,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
     private static final HashedWheelTimer RECONNECT_TIMER = new HashedWheelTimer();
-    private static final InternalLogger log = Slf4JLoggerFactory.getInstance(NettyConnection.class);
+    private static final InternalLogger log = Slf4JLoggerFactory.getInstance(HttpConnection.class);
 
     private final Bootstrap bootstrap;
     private final long maxWaitingOpenTime;
@@ -62,11 +60,10 @@ public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
                 ch.pipeline().addLast("idle-handler", new IdleStateHandler(0,
                         0,
                         conf.getIdleHeartbeatInterval()));
-                ch.pipeline().addLast("http-codec", new HttpClientCodec());
+                ch.pipeline().addLast("http-codec", new HttpResponseDecoder());
                 ch.pipeline().addLast("response-body-cumulate", new HttpObjectAggregator(conf.getMaxRespBodyLen(),
                         true));
-                ch.pipeline().addLast("http-event-handler", new NettyHttpHandler(conf.getHostHeader(),
-                        HttpConnection.this));
+                ch.pipeline().addLast("http-pipeline-handler", new NettyHttpHandler(HttpConnection.this));
             }
         });
         this.bootstrap = bootstrap;
@@ -117,21 +114,25 @@ public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
             }
         } else {
             ChannelFuture future = channel.writeAndFlush(request);
-            future.addListener(f -> {
-                if (!f.isSuccess()) {
-                    Throwable cause = f.cause();
-                    if (cause instanceof ClosedChannelException) {
-                        // 调用了write 会先交给netty排队。如果排队过程中连接断开了，交接下一个节点发送
-                        // 能够有机会进入netty排队，差点就发出去了，这里把times变成0，让它尽可能快的发出去
-                        next.send(request, 0);
-                    } else if (cause != null) {
-                        request.onError(new RpcException("connection error", cause), HttpConnection.this);
-                    } else {
-                        request.onError(new RpcException("send occur unkown error"), HttpConnection.this);
-                    }
-                }
-            });
+            addResultListener(request, future);
         }
+    }
+
+    private void addResultListener(HttpRequest request, ChannelFuture future) {
+        future.addListener(f -> {
+            if (!f.isSuccess()) {
+                Throwable cause = f.cause();
+                if (cause instanceof ClosedChannelException) {
+                    // 调用了write 会先交给netty排队。如果排队过程中连接断开了，交接下一个节点发送
+                    // 能够有机会进入netty排队，差点就发出去了，这里把times变成0，让它尽可能快的发出去
+                    next.send(request, 0);
+                } else if (cause != null) {
+                    request.onError(new RpcException("connection error", cause), HttpConnection.this);
+                } else {
+                    request.onError(new RpcException("send occur unkown error"), HttpConnection.this);
+                }
+            }
+        });
     }
 
     @Override
@@ -221,9 +222,9 @@ public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
         Iterator<HttpRequest> iterator = waitingQueue.collect();
         for (; iterator.hasNext(); ) {
             HttpRequest req = iterator.next();
-            ch.write(req);
+            ChannelFuture future = ch.writeAndFlush(req);
+            addResultListener(req, future);
         }
-        ch.flush();
     }
 
     @Override

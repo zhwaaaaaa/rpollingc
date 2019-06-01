@@ -1,6 +1,7 @@
 package com.zhw.rpollingc.http.conn;
 
-import com.zhw.rpollingc.request.netty.ExpiredAddressResolverGroup;
+import com.zhw.rpollingc.http.NettyConfig;
+import com.zhw.rpollingc.http.netty.ExpiredAddressResolverGroup;
 import com.zhw.rpollingc.request.netty.NettyConfig;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;

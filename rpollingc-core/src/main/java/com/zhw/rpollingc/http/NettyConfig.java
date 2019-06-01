@@ -1,4 +1,4 @@
-package com.zhw.rpollingc.request.netty;
+package com.zhw.rpollingc.http;
 
 import io.netty.util.internal.StringUtil;
 

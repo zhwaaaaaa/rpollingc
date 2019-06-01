@@ -1,11 +1,9 @@
 package com.zhw.rpollingc.common.codec;
 
 
-import com.zhw.rpollingc.common.TypeReference;
+public interface Codec<C, S, R, T> {
 
-public interface Codec<S, R, T> {
+    S encode(C config) throws EncodeException;
 
-    S encode(String service, Object msg) throws EncodeException;
-
-    T decode(R response, TypeReference<T> typeReference) throws DecodeException;
+    T decode(R response, C conf) throws DecodeException;
 }

@@ -1,4 +1,4 @@
-package com.zhw.rpollingc.request.netty;
+package com.zhw.rpollingc.http.netty;
 
 import io.netty.resolver.*;
 import io.netty.util.concurrent.EventExecutor;
