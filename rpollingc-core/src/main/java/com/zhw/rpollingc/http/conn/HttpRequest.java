@@ -20,6 +20,10 @@ public abstract class HttpRequest implements Request<FullHttpResponse> {
         return request.method();
     }
 
+    public HttpVersion getVersion() {
+        return HttpVersion.HTTP_1_1;
+    }
+
 
     @Override
     public String getService() {
