@@ -14,14 +14,14 @@ public class BodyAllocator {
         this.allocator = allocator;
     }
 
-    private BodyOutputStream getBodyOutputStream() {
+    public BodyOutputStream getBodyOutputStream() {
         // 一般只调用一次
         ByteBuf buffer = allocator.buffer();
         bufs = Collections.singletonList(buffer);
         return new BodyOutputStream(buffer);
     }
 
-    public List<ByteBuf> getBufs() {
+    List<ByteBuf> getBufs() {
         return bufs;
     }
 }

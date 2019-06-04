@@ -9,6 +9,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.CompositeByteBuf;
+import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.util.CharsetUtil;
@@ -17,7 +18,7 @@ import io.netty.util.internal.StringUtil;
 import java.util.List;
 
 
-public abstract class HttpCodec implements Codec<HttpRequest, ByteBuf, FullHttpResponse, HttpResponse> {
+public abstract class HttpCodec implements Codec<HttpRequest<ReqOptions>, ByteBuf, FullHttpResponse, HttpResponse> {
     private static final char SLASH = '/';
     private static final char QUESTION_MARK = '?';
     private static final int SLASH_AND_SPACE_SHORT = (SLASH << 8) | HttpConstants.SP;
@@ -44,15 +45,16 @@ public abstract class HttpCodec implements Codec<HttpRequest, ByteBuf, FullHttpR
     @Override
     public ByteBuf encode(HttpRequest request) throws EncodeException {
         CompositeByteBuf buffer = allocator.compositeBuffer(2);
-        ByteBuf headers = allocator.buffer(256);
+        ByteBuf headers = allocator.buffer((int) initialHeadersCapacity);
         encodeInitialLine(request, headers);
-        HeadersWriter headersWriter = new HeadersWriter(buffer);
+        HeadersWriter headersWriter = new HeadersWriter(headers);
 
         BodyAllocator bodyAllocator = new BodyAllocator(this.allocator);
         BodyOutputStream stream;
         try {
             stream = encodeHeaderAndBody(request,
                     headersWriter, bodyAllocator);
+            headers.writeShort(HeadersWriter.CRLF_SHORT);
         } catch (EncodeException e) {
             List<ByteBuf> bufs = bodyAllocator.getBufs();
             for (ByteBuf buf : bufs) {
@@ -83,11 +85,11 @@ public abstract class HttpCodec implements Codec<HttpRequest, ByteBuf, FullHttpR
         }
     }
 
-    protected abstract BodyOutputStream encodeHeaderAndBody(HttpRequest request,
+    protected abstract BodyOutputStream encodeHeaderAndBody(HttpRequest<ReqOptions> request,
                                                             HeadersWriter headersWriter,
                                                             BodyAllocator allocator) throws EncodeException;
 
-    private void encodeInitialLine(HttpRequest request, ByteBuf buf) {
+    private void encodeInitialLine(HttpRequest<ReqOptions> request, ByteBuf buf) {
         ByteBufUtil.copy(request.getMethod().asciiName(), buf);
         String service = request.getService();
         if (StringUtil.isNullOrEmpty(service)) {
@@ -101,8 +103,15 @@ public abstract class HttpCodec implements Codec<HttpRequest, ByteBuf, FullHttpR
 
 
     @Override
-    public HttpResponse decode(FullHttpResponse response, HttpRequest conf) throws DecodeException {
-        return null;
+    public HttpResponse decode(FullHttpResponse response, HttpRequest<ReqOptions> conf) throws DecodeException {
+        DecoderResult result = response.decoderResult();
+        if (result.isSuccess()) {
+            return decodeInternal(response, conf);
+        } else {
+            throw new DecodeException("bad response", result.cause());
+        }
     }
+
+    protected abstract HttpResponse decodeInternal(FullHttpResponse response, HttpRequest<ReqOptions> conf) throws DecodeException;
 
 }

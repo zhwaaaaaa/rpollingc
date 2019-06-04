@@ -10,4 +10,6 @@ public interface HttpResponse<T> {
 
     T content();
 
+    Object err();
+
 }

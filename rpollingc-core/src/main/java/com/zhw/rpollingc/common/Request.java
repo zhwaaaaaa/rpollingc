@@ -1,10 +1,12 @@
 package com.zhw.rpollingc.common;
 
-public interface Request<R> {
+public interface Request<R, O> {
 
     String getService();
 
     Object getBody();
+
+    O getOptions();
 
     int getTimeoutMs();
 

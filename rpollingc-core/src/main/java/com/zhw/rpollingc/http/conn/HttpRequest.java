@@ -4,7 +4,7 @@ import com.zhw.rpollingc.common.Request;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.*;
 
-public abstract class HttpRequest implements Request<FullHttpResponse> {
+public abstract class HttpRequest<O> implements Request<FullHttpResponse, O> {
 
     private FullHttpRequest request;
     private Object body;

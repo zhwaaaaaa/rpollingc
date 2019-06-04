@@ -33,7 +33,7 @@ public class HeadersWriter {
         buf.writerIndex(offset);
     }
 
-    void writeAscii(int offset, CharSequence value) {
+    private void writeAscii(int offset, CharSequence value) {
         if (value instanceof AsciiString) {
             ByteBufUtil.copy((AsciiString) value, 0, buf, offset, value.length());
         } else {

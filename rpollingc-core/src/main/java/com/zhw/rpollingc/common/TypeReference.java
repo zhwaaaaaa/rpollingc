@@ -1,4 +1,9 @@
 package com.zhw.rpollingc.common;
 
-public interface TypeReference<T> {
+import java.lang.reflect.Type;
+
+public interface TypeReference {
+
+    Type getType();
+
 }

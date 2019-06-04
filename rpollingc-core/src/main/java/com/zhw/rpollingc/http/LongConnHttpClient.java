@@ -6,6 +6,7 @@ import com.zhw.rpollingc.http.conn.HttpEndPoint;
 import com.zhw.rpollingc.http.conn.HttpRequest;
 import com.zhw.rpollingc.http.conn.MultiConnHttpEndPoint;
 import com.zhw.rpollingc.http.protocol.HttpCodec;
+import com.zhw.rpollingc.http.protocol.ReqOptions;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpMethod;
@@ -26,17 +27,20 @@ public class LongConnHttpClient implements EndPoint, HttpClient {
         }
     }
 
-    class Req extends HttpRequest {
+    class Req extends HttpRequest<ReqOptions> {
         private ByteBuf byteBuf;
         private final Consumer<FullHttpResponse> onResp;
         private final Consumer<Throwable> onErr;
+        private final ReqOptions options;
 
         public Req(HttpMethod method, String service, Object body,
                    Consumer<FullHttpResponse> onResp,
-                   Consumer<Throwable> onErr) {
+                   Consumer<Throwable> onErr,
+                   ReqOptions options) {
             super(method, service, body);
             this.onResp = onResp;
             this.onErr = onErr;
+            this.options = options;
         }
 
         @Override
@@ -48,6 +52,11 @@ public class LongConnHttpClient implements EndPoint, HttpClient {
             this.byteBuf = byteBuf;
         }
 
+
+        @Override
+        public ReqOptions getOptions() {
+            return options;
+        }
 
         @Override
         public void onErr(Throwable err) {
@@ -93,8 +102,9 @@ public class LongConnHttpClient implements EndPoint, HttpClient {
 
     private Req encodeReq(HttpMethod method, String url, Object body,
                           Consumer<FullHttpResponse> onResp,
-                          Consumer<Throwable> onErr) {
-        Req request = new Req(method, url, body, onResp, onErr);
+                          Consumer<Throwable> onErr,
+                          ReqOptions options) {
+        Req request = new Req(method, url, body, onResp, onErr, options);
         ByteBuf byteBuf = codec.encode(request);
         request.setByteBuf(byteBuf);
         return request;
@@ -103,10 +113,10 @@ public class LongConnHttpClient implements EndPoint, HttpClient {
     @Override
     public HttpResponse get(String url) throws RpcException {
 
-        return sync(HttpMethod.GET, url, null);
+        return sync(HttpMethod.GET, url, null, null);
     }
 
-    private HttpResponse sync(HttpMethod method, String url, Object body) {
+    private HttpResponse sync(HttpMethod method, String url, Object body, ReqOptions options) {
         Res<FullHttpResponse> res = new Res<>();
 
         CountDownLatch latch = new CountDownLatch(1);
@@ -120,7 +130,7 @@ public class LongConnHttpClient implements EndPoint, HttpClient {
             latch.countDown();
         };
 
-        Req req = encodeReq(method, url, body, resp, onErr);
+        Req req = encodeReq(method, url, body, resp, onErr, options);
         endPoint.send(req);
 
         try {
@@ -148,6 +158,6 @@ public class LongConnHttpClient implements EndPoint, HttpClient {
 
     @Override
     public HttpResponse post(String url, Object body) throws RpcException {
-        return sync(HttpMethod.POST, url, body);
+        return sync(HttpMethod.POST, url, body, null);
     }
 }
