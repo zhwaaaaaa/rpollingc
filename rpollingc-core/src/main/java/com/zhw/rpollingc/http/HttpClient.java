@@ -2,10 +2,10 @@ package com.zhw.rpollingc.http;
 
 import com.zhw.rpollingc.common.RpcException;
 
-public interface HttpClient {
+public interface HttpClient<O> {
 
-    HttpResponse get(String url) throws RpcException;
+    HttpResponse get(String url, O options) throws RpcException;
 
-    HttpResponse post(String url, Object body) throws RpcException;
+    HttpResponse post(String url, Object body, O options) throws RpcException;
 
 }

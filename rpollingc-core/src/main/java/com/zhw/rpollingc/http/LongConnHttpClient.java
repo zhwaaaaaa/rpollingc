@@ -16,7 +16,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class LongConnHttpClient implements EndPoint, HttpClient {
+public class LongConnHttpClient implements EndPoint, HttpClient<ReqOptions> {
 
     private static final long timeoutMs = 10000L;
 
@@ -111,9 +111,8 @@ public class LongConnHttpClient implements EndPoint, HttpClient {
     }
 
     @Override
-    public HttpResponse get(String url) throws RpcException {
-
-        return sync(HttpMethod.GET, url, null, null);
+    public HttpResponse get(String url, ReqOptions options) throws RpcException {
+        return sync(HttpMethod.GET, url, null, options);
     }
 
     private HttpResponse sync(HttpMethod method, String url, Object body, ReqOptions options) {
@@ -157,7 +156,7 @@ public class LongConnHttpClient implements EndPoint, HttpClient {
     }
 
     @Override
-    public HttpResponse post(String url, Object body) throws RpcException {
-        return sync(HttpMethod.POST, url, body, null);
+    public HttpResponse post(String url, Object body, ReqOptions options) throws RpcException {
+        return sync(HttpMethod.POST, url, body, options);
     }
 }
