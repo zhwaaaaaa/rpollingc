@@ -2,8 +2,12 @@ package com.zhw.rpollingc.common;
 
 import java.lang.reflect.Type;
 
-public interface TypeReference {
+public abstract class TypeReference<T> {
 
-    Type getType();
+    public static TypeReference from(Type type) {
+        return new SimpleTypeReference(type);
+    }
+
+    public abstract Type getType();
 
 }

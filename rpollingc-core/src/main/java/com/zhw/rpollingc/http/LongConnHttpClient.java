@@ -13,7 +13,10 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.util.ReferenceCounted;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class LongConnHttpClient implements EndPoint, HttpClient<ReqOptions> {
@@ -29,13 +32,13 @@ public class LongConnHttpClient implements EndPoint, HttpClient<ReqOptions> {
 
     class Req extends HttpRequest<ReqOptions> {
         private ByteBuf byteBuf;
-        private final Consumer<FullHttpResponse> onResp;
-        private final Consumer<Throwable> onErr;
+        private final BiConsumer<FullHttpResponse, Req> onResp;
+        private final BiConsumer<Throwable, Req> onErr;
         private final ReqOptions options;
 
         public Req(HttpMethod method, String service, Object body,
-                   Consumer<FullHttpResponse> onResp,
-                   Consumer<Throwable> onErr,
+                   BiConsumer<FullHttpResponse, Req> onResp,
+                   BiConsumer<Throwable, Req> onErr,
                    ReqOptions options) {
             super(method, service, body);
             this.onResp = onResp;
@@ -61,14 +64,14 @@ public class LongConnHttpClient implements EndPoint, HttpClient<ReqOptions> {
         @Override
         public void onErr(Throwable err) {
             release(byteBuf);
-            onErr.accept(err);
+            onErr.accept(err, this);
         }
 
 
         @Override
         public void onResp(FullHttpResponse response) {
             release(byteBuf);
-            onResp.accept(response);
+            onResp.accept(response, this);
         }
     }
 
@@ -81,6 +84,8 @@ public class LongConnHttpClient implements EndPoint, HttpClient<ReqOptions> {
 
     private final HttpCodec codec;
 
+    private final ExecutorService executorService;
+
     public LongConnHttpClient(NettyConfig config, HttpCodec codec) {
         if (config == null || codec == null) {
             throw new NullPointerException("config||codec");
@@ -88,6 +93,7 @@ public class LongConnHttpClient implements EndPoint, HttpClient<ReqOptions> {
         this.codec = codec;
         endPoint = new MultiConnHttpEndPoint(config);
         endPoint.connect();
+        executorService = Executors.newCachedThreadPool();
     }
 
     @Override
@@ -97,13 +103,14 @@ public class LongConnHttpClient implements EndPoint, HttpClient<ReqOptions> {
 
     @Override
     public void close() {
+        executorService.shutdown();
         endPoint.close();
     }
 
     private Req encodeReq(HttpMethod method, String url, Object body,
-                          Consumer<FullHttpResponse> onResp,
-                          Consumer<Throwable> onErr,
-                          ReqOptions options) {
+                          BiConsumer<FullHttpResponse, Req> onResp,
+                          BiConsumer<Throwable, Req> onErr,
+                          ReqOptions options) throws RpcException {
         Req request = new Req(method, url, body, onResp, onErr, options);
         ByteBuf byteBuf = codec.encode(request);
         request.setByteBuf(byteBuf);
@@ -119,12 +126,12 @@ public class LongConnHttpClient implements EndPoint, HttpClient<ReqOptions> {
         Res<FullHttpResponse> res = new Res<>();
 
         CountDownLatch latch = new CountDownLatch(1);
-        Consumer<Throwable> onErr = e -> {
+        BiConsumer<Throwable, Req> onErr = (e, r) -> {
             res.err = e;
             latch.countDown();
         };
 
-        Consumer<FullHttpResponse> resp = r -> {
+        BiConsumer<FullHttpResponse, Req> resp = (r, req) -> {
             res.res = r;
             latch.countDown();
         };
@@ -144,6 +151,9 @@ public class LongConnHttpClient implements EndPoint, HttpClient<ReqOptions> {
                 throw new RpcException(res.err.getMessage(), res.err);
             }
         }
+        if(res.res == null){
+            throw new RpcException("timeout");
+        }
         try {
             return codec.decode(res.res, req);
         } catch (RpcException e) {
@@ -155,8 +165,60 @@ public class LongConnHttpClient implements EndPoint, HttpClient<ReqOptions> {
         }
     }
 
+    private void async(HttpMethod method, String url, Object body,
+                       Consumer<HttpResponse> onResp,
+                       Consumer<Throwable> onErr, ReqOptions options) {
+
+
+        BiConsumer<FullHttpResponse, Req> resp = (frs, r) -> {
+            try {
+                executorService.execute(() -> {
+                    HttpResponse response;
+                    try {
+                        response = codec.decode(frs, r);
+                    } catch (Throwable e) {
+                        onErr.accept(e);
+                        return;
+                    } finally {
+                        release(frs);
+                    }
+                    onResp.accept(response);
+
+                });
+            } catch (Throwable e) {
+                release(frs);
+                onErr.accept(e);
+            }
+        };
+        BiConsumer<Throwable, Req> err = (e, r) -> onErr.accept(e);
+
+        try {
+            Req req = encodeReq(method, url, body, resp, err, options);
+            endPoint.send(req);
+        } catch (Throwable e) {
+            onErr.accept(e);
+        }
+    }
+
     @Override
     public HttpResponse post(String url, Object body, ReqOptions options) throws RpcException {
         return sync(HttpMethod.POST, url, body, options);
+    }
+
+    @Override
+    public void getAsync(String url,
+                         ReqOptions options,
+                         Consumer<HttpResponse> onResp,
+                         Consumer<Throwable> onErr) {
+        async(HttpMethod.GET, url, null, onResp, onErr, options);
+    }
+
+    @Override
+    public void postAsync(String url,
+                          Object body,
+                          ReqOptions options,
+                          Consumer<HttpResponse> onResp,
+                          Consumer<Throwable> onErr) {
+        async(HttpMethod.POST, url, body, onResp, onErr, options);
     }
 }

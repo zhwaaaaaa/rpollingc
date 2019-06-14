@@ -6,12 +6,12 @@ import java.net.InetSocketAddress;
 
 public class NettyConfig {
     private String remoteHost;
-    private int remotePort;
-    private String hostHeader;
+    private int remotePort = 80;
     private int idleHeartbeatInterval = 30;
     private long dnsExpireTime = -1;
     private int maxRespBodyLen = 10 << 20; // 10M
     private long maxWaitingOpenTimeMs = 5000;//5s
+    private int maxWaitingReSendReq = 1000;
 
     public NettyConfig() {
     }
@@ -23,14 +23,6 @@ public class NettyConfig {
 
     public InetSocketAddress getRemoteAddress() {
         return new InetSocketAddress(remoteHost, remotePort);
-    }
-
-    public void setHostHeader(String hostHeader) {
-        this.hostHeader = hostHeader;
-    }
-
-    public String getRemoteHost() {
-        return remoteHost;
     }
 
     public void setRemoteHost(String remoteHost) {
@@ -69,13 +61,6 @@ public class NettyConfig {
         this.dnsExpireTime = dnsExpireTime;
     }
 
-    public String getHostHeader() {
-        if (StringUtil.isNullOrEmpty(hostHeader)) {
-            return remoteHost + ":" + remotePort;
-        }
-        return hostHeader;
-    }
-
     public int getIdleHeartbeatInterval() {
         return idleHeartbeatInterval;
     }
@@ -84,14 +69,15 @@ public class NettyConfig {
         this.idleHeartbeatInterval = idleHeartbeatInterval;
     }
 
-    @Override
-    public String toString() {
-        return "{" + "remoteHost='" + remoteHost + '\'' +
-                ", remotePort=" + remotePort +
-                ", hostHeader='" + hostHeader + '\'' +
-                ", idleHeartbeatInterval=" + idleHeartbeatInterval +
-                ", dnsExpireTime=" + dnsExpireTime +
-                ", maxRespBodyLen=" + maxRespBodyLen +
-                '}';
+    public String getRemoteHost() {
+        return remoteHost;
+    }
+
+    public int getMaxWaitingReSendReq() {
+        return maxWaitingReSendReq;
+    }
+
+    public void setMaxWaitingReSendReq(int maxWaitingReSendReq) {
+        this.maxWaitingReSendReq = maxWaitingReSendReq;
     }
 }

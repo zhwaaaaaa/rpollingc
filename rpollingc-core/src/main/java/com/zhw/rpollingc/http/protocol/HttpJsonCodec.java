@@ -23,13 +23,13 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-public class HttpJsonEncodec extends HttpCodec {
+public class HttpJsonCodec extends HttpCodec {
     public static final AsciiString APPLICATION_JSON_UTF8 = AsciiString.cached("application/json;charset=utf-8");
     private final ObjectMapper objectMapper;
     private final boolean useGzip;
     private final String host;
 
-    public HttpJsonEncodec(ByteBufAllocator allocator, ObjectMapper objectMapper, boolean useGzip, String host) {
+    public HttpJsonCodec(ByteBufAllocator allocator, ObjectMapper objectMapper, boolean useGzip, String host) {
         super(allocator);
         this.objectMapper = objectMapper;
         this.useGzip = useGzip;
