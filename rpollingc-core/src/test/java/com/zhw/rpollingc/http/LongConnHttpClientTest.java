@@ -22,6 +22,7 @@ public class LongConnHttpClientTest {
         NettyConfig config = new NettyConfig();
         config.setRemoteHost("localhost");
         config.setRemotePort(3000);
+        config.setMaxWaitingReSendReq(10000);
 
         HttpJsonCodec codec = new HttpJsonCodec(new PooledByteBufAllocator(true),
                 new ObjectMapper(), false, "localhost:3000");
@@ -32,13 +33,19 @@ public class LongConnHttpClientTest {
         CountDownLatch latch = new CountDownLatch(num);
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < num; i++) {
-            HttpResponse response = client.get("/json", options);
-            print(response);
+            client.getAsync("/json", options, response -> {
+                print(response);
+                latch.countDown();
+            }, e -> {
+                e.printStackTrace();
+                latch.countDown();
+            });
+
         }
         System.out.println("-------------" + (System.currentTimeMillis() - startTime));
         try {
             latch.await();
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         System.out.println("-------------" + (System.currentTimeMillis() - startTime));
@@ -51,6 +58,9 @@ public class LongConnHttpClientTest {
 
     @org.junit.Test
     public void post() {
+
+
+        PersonBuilder personBuilder = new PersonBuilder();
     }
 
     @org.junit.Test

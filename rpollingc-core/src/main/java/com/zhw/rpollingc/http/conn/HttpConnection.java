@@ -4,6 +4,7 @@ import com.zhw.rpollingc.common.RpcException;
 import com.zhw.rpollingc.http.NettyConfig;
 import com.zhw.rpollingc.utils.AtomicArrayCollector;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -114,12 +115,19 @@ public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
                 request.onErr(new IllegalStateException("sending after calling connect()"));
             }
         } else {
-            ChannelFuture future = channel.writeAndFlush(request);
-            addResultListener(request, future);
+            doWrite0(channel, request);
         }
     }
 
-    private void addResultListener(HttpRequest request, ChannelFuture future) {
+    private void doWrite0(Channel channel, HttpRequest request) {
+        ByteBuf reqByteBuf = request.getReqByteBuf();
+        int i = reqByteBuf.refCnt();
+        if (i != 2) {
+            System.out.println("-----:" + i);
+        }
+        // 这里必须把引用计数+1,防止发送失败被netty回收
+        reqByteBuf.retain();
+        ChannelFuture future = channel.writeAndFlush(request);
         future.addListener(f -> {
             if (!f.isSuccess()) {
                 Throwable cause = f.cause();
@@ -134,6 +142,7 @@ public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
                 }
             }
         });
+
     }
 
     @Override
@@ -225,9 +234,7 @@ public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
         this.lastCloseTime = -2;
         Iterator<HttpRequest> iterator = waitingQueue.collect();
         for (; iterator.hasNext(); ) {
-            HttpRequest req = iterator.next();
-            ChannelFuture future = ch.writeAndFlush(req);
-            addResultListener(req, future);
+            doWrite0(ch, iterator.next());
         }
     }
 
