@@ -12,5 +12,13 @@
  - 使用jdk Proxy 调用，结合rxjava方便的实现异步。并且也支持同步调用
  - 采用jackson 序列化和反序列化
  
-## 
+## 性能
+ ###client: 
+ - OS:win10. 
+ - CPU:INTEL I7 4710M, 16G 内存。
+ ### server:
+ - OS: centos6.6
+ - CPU:VMWare 4核心 4G内存
+ - 服务器nginx。return 30 byte body.
+ - `LongConnHttpClient` qps 9000+.
  
