@@ -121,10 +121,6 @@ public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
 
     private void doWrite0(Channel channel, HttpRequest request) {
         ByteBuf reqByteBuf = request.getReqByteBuf();
-        int i = reqByteBuf.refCnt();
-        if (i != 2) {
-            System.out.println("-----:" + i);
-        }
         // 这里必须把引用计数+1,防止发送失败被netty回收
         reqByteBuf.retain();
         ChannelFuture future = channel.writeAndFlush(request);
