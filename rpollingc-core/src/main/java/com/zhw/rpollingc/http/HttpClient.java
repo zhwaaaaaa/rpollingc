@@ -1,10 +1,11 @@
 package com.zhw.rpollingc.http;
 
+import com.zhw.rpollingc.common.EndPoint;
 import com.zhw.rpollingc.common.RpcException;
 
 import java.util.function.Consumer;
 
-public interface HttpClient<O> {
+public interface HttpClient<O> extends EndPoint {
 
     HttpResponse get(String url, O options) throws RpcException;
 

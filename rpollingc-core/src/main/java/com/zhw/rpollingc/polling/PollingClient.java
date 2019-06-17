@@ -1,11 +1,12 @@
 package com.zhw.rpollingc.polling;
 
+import com.zhw.rpollingc.common.EndPoint;
 import com.zhw.rpollingc.common.ReflectTypeReference;
 import com.zhw.rpollingc.common.RpcException;
 
 import java.util.function.Consumer;
 
-public interface PollingClient {
+public interface PollingClient extends EndPoint {
 
     <T> T send(String url, Object body, ReflectTypeReference<T> typeReference, int maxWaitingMs) throws RpcException;
 

@@ -3,14 +3,16 @@ package com.zhw.rpollingc.polling;
 import com.zhw.rpollingc.common.ReflectTypeReference;
 import com.zhw.rpollingc.common.RpcException;
 import com.zhw.rpollingc.http.HttpClient;
+import com.zhw.rpollingc.http.protocol.ReqOptions;
+import com.zhw.rpollingc.promise.Promise;
 
 import java.util.function.Consumer;
 
-public class HttpPollingClient<O> implements PollingClient {
+public class HttpPollingClient implements PollingClient {
 
-    private HttpClient<O> client;
+    private HttpClient<ReqOptions> client;
 
-    public HttpPollingClient(HttpClient<O> client) {
+    public HttpPollingClient(HttpClient<ReqOptions> client) {
         this.client = client;
     }
 
@@ -19,6 +21,8 @@ public class HttpPollingClient<O> implements PollingClient {
                       Object body,
                       ReflectTypeReference<T> typeReference,
                       int maxWaitingMs) throws RpcException {
+
+
         return null;
     }
 
@@ -30,5 +34,16 @@ public class HttpPollingClient<O> implements PollingClient {
                               Consumer<RpcException> onError,
                               int maxWaitingMs) {
 
+
+    }
+
+    @Override
+    public void connect() {
+        client.connect();
+    }
+
+    @Override
+    public void close() {
+        client.close();
     }
 }

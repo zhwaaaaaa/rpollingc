@@ -4,7 +4,6 @@ import com.zhw.rpollingc.common.RpcException;
 import com.zhw.rpollingc.http.NettyConfig;
 import com.zhw.rpollingc.utils.AtomicArrayCollector;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -27,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  * {@link NettyHttpHandler} use send request with http1.1 and keep alive the real tcp connection.
  * it will send request continuously even if the response of last request not yet received,
  * but much server will force closing connection after accepted number of http requests,
- * even if using http1.1,such as nginx(max_requests=..),tomcat.
+ * even if using http1.1,such as nginx(keepalive_requests=..),tomcat.
  * so auto reconnect to the server and resend request is necessary.
  * </p>
  * <p>
@@ -120,13 +119,8 @@ public class HttpConnection implements HttpEndPoint, NettyHttpHandler.Listener {
     }
 
     private void doWrite0(Channel channel, HttpRequest request) {
-        ByteBuf reqByteBuf = request.getReqByteBuf();
-        int i = reqByteBuf.refCnt();
-        if (i != 2) {
-            System.out.println("-----:" + i);
-        }
         // 这里必须把引用计数+1,防止发送失败被netty回收
-        reqByteBuf.retain();
+        request.getReqByteBuf().retain();
         ChannelFuture future = channel.writeAndFlush(request);
         future.addListener(f -> {
             if (!f.isSuccess()) {

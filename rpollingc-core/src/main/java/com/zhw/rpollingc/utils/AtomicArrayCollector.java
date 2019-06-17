@@ -12,6 +12,7 @@ public class AtomicArrayCollector<E> {
     private static final AtomicIntegerFieldUpdater<AtomicArrayCollector> STATUS
             = AtomicIntegerFieldUpdater.newUpdater(AtomicArrayCollector.class, "status");
 
+    @SuppressWarnings("unused")
     private volatile int status;
     private final Object[] el;
 

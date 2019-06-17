@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class LongConnHttpClient implements EndPoint, HttpClient<ReqOptions> {
+public class LongConnHttpClient implements HttpClient<ReqOptions> {
 
     private static final long timeoutMs = 10000L;
 
